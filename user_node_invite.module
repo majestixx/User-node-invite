@@ -112,17 +112,41 @@ function user_node_invite_page_submit($form, &$form_state) {
 	$account = array_merge($account, uni_ps_test_assign_core_fields($user_data));
 	$account = user_save('', $account);
 	
-	// Use for roles if necessary
-	//module_invoke_all('uif_post_create', $account, $user_data, $form_state);
-/*
-	if ($notify) {
+	// Retrieve Node ID
+	if($node=menu_get_object())
+		$nid = $node->nid;
+		
+	// Retrieve User ID
+	$uid = (array)$account;
+	$uid = $uid['uid'];
+	
+	// Retrieve ACL ID or create a new ACL if necessary
+	$acl_id = acl_get_id_by_name("content_access", "update_" . $nid);
+
+	if($acl_id == null)
+		$acl_id = acl_create_acl("content_access", "update_" . $nid);	
+	
+	// Add user to ACL
+	acl_add_user($acl_id, $uid);
+	
+	// Add node to ACL
+	acl_node_add_acl($nid, $acl_id, 0, 1, 0);
+	
+	// Switch authorization mode of node to acl
+	$access_entry = new stdClass;
+	$access_entry->nid = $nid;
+	$access_entry->gid = $acl_id;
+	$access_entry->realm = "acl";
+	$access_entry->grant_view = 0;
+	$access_entry->grant_update = 1;
+	$access_entry->grant_delete = 0;
+	drupal_write_record("node_access", $access_entry);
+	
+	// TODO: Send Mail
+	/*if ($notify) {
 		$account->password = $pass;    // For mail token; _user_mail_notify() expects this
 		_user_mail_notify('register_admin_created', $account);
 	}*/
-	
-	// Rechte zuweisen
-	
-	// Email versenden
 	
 	drupal_set_message("TODO");
 	return $account;
