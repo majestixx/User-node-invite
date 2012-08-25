@@ -69,12 +69,22 @@ function user_node_invite_page($form, &$form_state, $node){
 	'#title' => t('Name'),
 	'#required' => FALSE,);
 	
-  $form['email'] = array(
+	$form['first_name'] = array(
+	'#type' => 'textfield',
+	'#title' => t('First Name'),
+	'#required' => TRUE,);
+	
+	$form['last_name'] = array(
     '#type' => 'textfield',
+	'#title' => t('Last Name'),
+	'#required' => TRUE,);
+	
+	$form['email'] = array(
+	'#type' => 'textfield',
 	'#title' => t('E-Mail'),
 	'#required' => TRUE,);
 	
-  $form['submit'] = array(
+	$form['submit'] = array(
     '#type' => 'submit',
     '#value' => t('Create Invitation'),
     '#weight' => 10,
@@ -85,6 +95,73 @@ function user_node_invite_page($form, &$form_state, $node){
 
 function user_node_invite_page_submit($form, &$form_state) {
 	dpr($form_state);
+	$user_data = $form_state['values'];
 	
-	//The logic is done here...
+	$account = array();
+	$account['mail'] = $user_data['email'];
+	$account['init'] = $user_data['email'];
+	$account['status'] = 1;
+  
+	// Use the provided username if any, or derive it from the email
+	$username = empty($user_data['name']) ? preg_replace('/@.*$/', '', $user_data['email']) : $user_data['name'];
+	$account['name'] = uni_unique_username($username);
+  
+	// Generate a random password
+	$account['pass'] = user_password();
+  
+	$account = array_merge($account, uni_ps_test_assign_core_fields($user_data));
+	$account = user_save('', $account);
+	
+	// Use for roles if necessary
+	//module_invoke_all('uif_post_create', $account, $user_data, $form_state);
+/*
+	if ($notify) {
+		$account->password = $pass;    // For mail token; _user_mail_notify() expects this
+		_user_mail_notify('register_admin_created', $account);
+	}*/
+	
+	// Rechte zuweisen
+	
+	// Email versenden
+	
+	drupal_set_message("TODO");
+	return $account;
+}
+
+function uni_unique_username($name, $uid = 0) {
+  // Strip illegal characters
+  $name = preg_replace('/[^\x{80}-\x{F7} a-zA-Z0-9@_.\'-]/', '', $name);
+
+  // Strip leading and trailing whitespace
+  $name = trim($name);
+
+  // Convert any other series of spaces to a single space
+  $name = preg_replace('/ +/', ' ', $name);
+
+  // If there's nothing left use a default
+  $name = ('' === $name) ? t('user') : $name;
+
+  // Truncate to reasonable size
+  $name = (drupal_strlen($name) > (USERNAME_MAX_LENGTH - 10)) ? drupal_substr($name, 0, USERNAME_MAX_LENGTH - 11) : $name;
+
+  // Iterate until we find a unique name
+  $i = 0;
+  do {
+    $newname = empty($i) ? $name : $name . '_' . $i;
+    $args = array(':uid' => $uid, ':name' => $newname);
+    $found = db_query_range('SELECT uid from {users} WHERE uid <> :uid AND name = :name', 0, 1, $args)->fetchField();
+    $i++;
+  } while ($found);
+
+  return $newname;
+}
+
+function uni_ps_test_assign_core_fields($user_data) {
+  $fields = array();
+  
+  // see http://hojtsy.hu/blog/2011-jan-31/drupal-7039s-new-multilingual-systems-part-4-node-translation
+  $fields['field_profile_firstname'][LANGUAGE_NONE][0]['value'] = $user_data['first_name'];
+  $fields['field_profile_name'][LANGUAGE_NONE][0]['value'] = $user_data['last_name'];
+  
+  return $fields;
 }
