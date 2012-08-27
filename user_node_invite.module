@@ -25,9 +25,9 @@ function user_node_invite_menu() {
     'title' => 'Invite users',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('user_node_invite_page', 1), //refers to: function user_node_invite_page($form, &$form_state, $node)
-    //'access callback' => 'content_access_node_page_access',
-    'access callback' => TRUE,
-    //'access arguments' => array(1),
+    'access callback' => 'user_node_invite_page_access',
+    //'access callback' => TRUE,
+    'access arguments' => array(1),
     //'file' => 'content_access.admin.inc',
     //'theme callback' => '_node_custom_theme',
     'type' => MENU_LOCAL_TASK,
@@ -57,11 +57,11 @@ function user_node_invite_permission() {
 /**
  * Get access tab page for the viewed node.
  */
- /* function content_access_node_page_access($node) {
+ function user_node_invite_page_access($node) {
   global $user;
-  return content_access_get_settings('per_node', $node->type) && user_access('grant content access') ||
-    content_access_get_settings('per_node', $node->type) && (user_access('grant own content access') && ($user->uid == $node->uid));
-} */
+  return user_access('grant user node invite') ||
+         (user_access('grant user own node invite') && ($user->uid == $node->uid));
+}
 
 function user_node_invite_page($form, &$form_state, $node){
   $form['name'] = array(
@@ -75,7 +75,7 @@ function user_node_invite_page($form, &$form_state, $node){
 	'#required' => TRUE,);
 	
 	$form['last_name'] = array(
-    '#type' => 'textfield',
+	'#type' => 'textfield',
 	'#title' => t('Last Name'),
 	'#required' => TRUE,);
 	
@@ -104,12 +104,12 @@ function user_node_invite_page_submit($form, &$form_state) {
   
 	// Use the provided username if any, or derive it from the email
 	$username = empty($user_data['name']) ? preg_replace('/@.*$/', '', $user_data['email']) : $user_data['name'];
-	$account['name'] = uni_unique_username($username);
+	$account['name'] = user_node_invite_unique_username($username);
   
 	// Generate a random password
 	$account['pass'] = user_password();
   
-	$account = array_merge($account, uni_ps_test_assign_core_fields($user_data));
+	$account = array_merge($account, user_node_invite_assign_core_fields($user_data));
 	$account = user_save('', $account);
 	
 	// Retrieve Node ID
@@ -152,7 +152,7 @@ function user_node_invite_page_submit($form, &$form_state) {
 	return $account;
 }
 
-function uni_unique_username($name, $uid = 0) {
+function user_node_invite_unique_username($name, $uid = 0) {
   // Strip illegal characters
   $name = preg_replace('/[^\x{80}-\x{F7} a-zA-Z0-9@_.\'-]/', '', $name);
 
@@ -180,7 +180,7 @@ function uni_unique_username($name, $uid = 0) {
   return $newname;
 }
 
-function uni_ps_test_assign_core_fields($user_data) {
+function user_node_invite_assign_core_fields($user_data) {
   $fields = array();
   
   // see http://hojtsy.hu/blog/2011-jan-31/drupal-7039s-new-multilingual-systems-part-4-node-translation
