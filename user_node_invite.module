@@ -132,16 +132,25 @@ function user_node_invite_page_submit($form, &$form_state) {
 	// Add node to ACL
 	acl_node_add_acl($nid, $acl_id, 0, 1, 0);
 	
-	// Switch authorization mode of node to acl
-	$access_entry = new stdClass;
-	$access_entry->nid = $nid;
-	$access_entry->gid = $acl_id;
-	$access_entry->realm = "acl";
-	$access_entry->grant_view = 0;
-	$access_entry->grant_update = 1;
-	$access_entry->grant_delete = 0;
-	drupal_write_record("node_access", $access_entry);
+	// Switch authorization mode of node to acl, if this was not already done before
+	$testbla = db_query('SELECT * FROM node_access WHERE nid = :nid AND realm = :acl', array(':nid' => $nid, ':acl' => "acl"));
+	$rights_missing = true;
+	foreach($testbla as $test) {
+		if(isset($test))
+			$rights_missing = false;
+	}
 	
+	if($rights_missing) {
+		$access_entry = new stdClass;
+		$access_entry->nid = $nid;
+		$access_entry->gid = $acl_id;
+		$access_entry->realm = "acl";
+		$access_entry->grant_view = 0;
+		$access_entry->grant_update = 1;
+		$access_entry->grant_delete = 0;
+		drupal_write_record("node_access", $access_entry);
+	}
+
 	// TODO: Send Mail
 	/*if ($notify) {
 		$account->password = $pass;    // For mail token; _user_mail_notify() expects this
