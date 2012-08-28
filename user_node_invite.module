@@ -26,10 +26,7 @@ function user_node_invite_menu() {
     'page callback' => 'drupal_get_form',
     'page arguments' => array('user_node_invite_page', 1), //refers to: function user_node_invite_page($form, &$form_state, $node)
     'access callback' => 'user_node_invite_page_access',
-    //'access callback' => TRUE,
     'access arguments' => array(1),
-    //'file' => 'content_access.admin.inc',
-    //'theme callback' => '_node_custom_theme',
     'type' => MENU_LOCAL_TASK,
     'weight' => 3,
     'context' => MENU_CONTEXT_PAGE | MENU_CONTEXT_INLINE,
@@ -166,7 +163,7 @@ function user_node_invite_page_submit($form, &$form_state) {
 		_user_mail_notify('register_admin_created', $account);
 	}*/
 	
-	drupal_set_message("TODO");
+	drupal_set_message(t('The invitation for @mail: @link', array('@mail' => $user_data['email'], '@link' => $tokenized_path)));
 	return $account;
 }
 
