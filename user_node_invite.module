@@ -151,6 +151,15 @@ function user_node_invite_page_submit($form, &$form_state) {
 		drupal_write_record("node_access", $access_entry);
 	}
 
+	// Retrieve the token for the created user from the database
+	$token_query = db_query('SELECT token FROM tokenauth_tokens WHERE uid = :uid', array(':uid' => $uid));
+	foreach($token_query as $entry) {
+		$token = $entry->token;
+	}
+	
+	// Generate the tokenized path to the current node using the created user
+	$tokenized_path = url('node/' . $nid, array('absolute' => TRUE, 'query' => array('token' => $token)));
+	
 	// TODO: Send Mail
 	/*if ($notify) {
 		$account->password = $pass;    // For mail token; _user_mail_notify() expects this
