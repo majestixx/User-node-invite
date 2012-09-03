@@ -5,3 +5,4 @@ package = Access control
 
 dependencies[] = tokenauth
 dependencies[] = acl
+dependencies[] = content_access
