@@ -76,6 +76,10 @@ function user_node_invite_page($form, &$form_state, $node){
 	'#title' => t('E-Mail'),
 	'#required' => TRUE,);
 	
+	$form['send_email'] = array(
+	'#type' => 'checkbox',
+	'#title' => t('Send invitation notification'));
+	
 	$form['submit'] = array(
     '#type' => 'submit',
     '#value' => t('Create Invitation'),
@@ -114,9 +118,9 @@ function user_node_invite_page_submit($form, &$form_state) {
 		$uid = (array)$account;
 		$uid = $uid['uid'];
 	} else {
-		$existing_user_notification = t("A user with the provided email was already present in the database. This user was reused. ");
+		$existing_user_notification = t("However, a user with the provided email was already present in the database and could be reused. ");
+		$account = user_load_by_mail($user_data['email']);
 	}
-
 	
 	// Retrieve Node ID
 		if($node=menu_get_object())
@@ -162,13 +166,17 @@ function user_node_invite_page_submit($form, &$form_state) {
 	// Generate the tokenized path to the current node using the created user
 	$tokenized_path = url('node/' . $nid, array('absolute' => TRUE, 'query' => array('token' => $token)));
 	
-	// TODO: Send Mail
-	/*if ($notify) {
-		$account->password = $pass;    // For mail token; _user_mail_notify() expects this
-		_user_mail_notify('register_admin_created', $account);
-	}*/
+	// Sends an invitation email to the user if the option was checked in the form	
+	if($user_data['send_email']) {
+		$params['account'] = $account;
+		$params['tokenized_path'] = $tokenized_path;
+		drupal_mail('user_node_invite', 'node_invite_created', $account->mail, user_preferred_language($account), $params);
+		$email_notification = t("The invitation was successfully created and the user was notified via E-mail. You find a copy of the link which was sent to the user below. ");
+	} else
+		$email_notification = t("The invitation was successfully created, but the user was not notified. You find the link, which the user should receive, below. ");
+
 	
-	drupal_set_message($existing_user_notification . t('The invitation for @mail: @link', array('@mail' => $user_data['email'], '@link' => $tokenized_path)));
+	drupal_set_message($email_notification . $existing_user_notification . t('The invitation link for @mail is: @link', array('@mail' => $user_data['email'], '@link' => $tokenized_path)));
 	return $account;
 }
 
@@ -215,3 +223,16 @@ function user_node_invite_form_alter(&$form, &$form_state, $form_id) {
 		unset($form['#token']);
 	}
 }
+
+function user_node_invite_mail($key, &$message, $params) {
+    $data['user'] = $params['account'];
+    $options['language'] = $message['language'];
+    user_mail_tokens($variables, $data, $options);
+    switch($key) {
+      case 'node_invite_created':
+        $langcode = $message['language']->language;
+        $message['subject'] = t('Contribution invititation from tech4p', $variables, array('langcode' => $langcode));
+        $message['body'][] = t("Dear Sir or Madam\n\nYou have been invited to contribute to the Tech4p research-portal.\nYour input is required on specific content, which can be found under the following link:\n@link\n\nKind regards,\nTech4p Research Portal", array('@link' => $params['tokenized_path']), array('langcode' => $langcode));
+        break;
+    }
+  }
