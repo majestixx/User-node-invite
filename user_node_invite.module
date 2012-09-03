@@ -61,11 +61,6 @@ function user_node_invite_permission() {
 }
 
 function user_node_invite_page($form, &$form_state, $node){
-  $form['name'] = array(
-    '#type' => 'textfield',
-	'#title' => t('Name'),
-	'#required' => FALSE,);
-	
 	$form['first_name'] = array(
 	'#type' => 'textfield',
 	'#title' => t('First Name'),
@@ -94,28 +89,38 @@ function user_node_invite_page_submit($form, &$form_state) {
 	dpr($form_state);
 	$user_data = $form_state['values'];
 	
-	$account = array();
-	$account['mail'] = $user_data['email'];
-	$account['init'] = $user_data['email'];
-	$account['status'] = 1;
+	// Fetch uid of the user if a user with the provided email already exists in the database
+	$existing_user = user_load_by_mail($user_data['email']);
+	$uid = $existing_user->uid;
+
+	// If the user did not already exist, create him/her
+	if(!isset($uid)) {
+		$account = array();
+		$account['mail'] = $user_data['email'];
+		$account['init'] = $user_data['email'];
+		$account['status'] = 1;
   
-	// Use the provided username if any, or derive it from the email
-	$username = empty($user_data['name']) ? preg_replace('/@.*$/', '', $user_data['email']) : $user_data['name'];
-	$account['name'] = user_node_invite_unique_username($username);
-  
-	// Generate a random password
-	$account['pass'] = user_password();
-  
-	$account = array_merge($account, user_node_invite_assign_core_fields($user_data));
-	$account = user_save('', $account);
+		// Derive the username from the email
+		$username = preg_replace('/@.*$/', '', $user_data['email']);
+		$account['name'] = user_node_invite_unique_username($username);
+	  
+		// Generate a random password
+		$account['pass'] = user_password();
+	  
+		$account = array_merge($account, user_node_invite_assign_core_fields($user_data));
+		$account = user_save('', $account);
+			
+		// Retrieve User ID
+		$uid = (array)$account;
+		$uid = $uid['uid'];
+	} else {
+		$existing_user_notification = t("A user with the provided email was already present in the database. This user was reused. ");
+	}
+
 	
 	// Retrieve Node ID
-	if($node=menu_get_object())
-		$nid = $node->nid;
-		
-	// Retrieve User ID
-	$uid = (array)$account;
-	$uid = $uid['uid'];
+		if($node=menu_get_object())
+			$nid = $node->nid;
 	
 	// Retrieve ACL ID or create a new ACL if necessary
 	$acl_id = acl_get_id_by_name("content_access", "update_" . $nid);
@@ -126,14 +131,14 @@ function user_node_invite_page_submit($form, &$form_state) {
 	// Add user to ACL
 	acl_add_user($acl_id, $uid);
 	
-	// Add node to ACL
+	// Add node to ACL, if not already done
 	acl_node_add_acl($nid, $acl_id, 0, 1, 0);
 	
 	// Switch authorization mode of node to acl, if this was not already done before
-	$testbla = db_query('SELECT * FROM node_access WHERE nid = :nid AND realm = :acl', array(':nid' => $nid, ':acl' => "acl"));
+	$permissionset = db_query('SELECT * FROM node_access WHERE nid = :nid AND realm = :acl', array(':nid' => $nid, ':acl' => "acl"));
 	$rights_missing = true;
-	foreach($testbla as $test) {
-		if(isset($test))
+	foreach($permissionset as $permission) {
+		if(isset($permission))
 			$rights_missing = false;
 	}
 	
@@ -163,7 +168,7 @@ function user_node_invite_page_submit($form, &$form_state) {
 		_user_mail_notify('register_admin_created', $account);
 	}*/
 	
-	drupal_set_message(t('The invitation for @mail: @link', array('@mail' => $user_data['email'], '@link' => $tokenized_path)));
+	drupal_set_message($existing_user_notification . t('The invitation for @mail: @link', array('@mail' => $user_data['email'], '@link' => $tokenized_path)));
 	return $account;
 }
 
@@ -207,11 +212,6 @@ function user_node_invite_assign_core_fields($user_data) {
 
 function user_node_invite_form_alter(&$form, &$form_state, $form_id) {
 	if($form_id == 'project_node_form') {
-		//dd($form);
-		//dd($form_state);
-		//$form['#token'] = false;
 		unset($form['#token']);
-
-		
 	}
 }
