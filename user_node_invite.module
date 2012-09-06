@@ -95,7 +95,8 @@ function user_node_invite_page_submit($form, &$form_state) {
 	
 	// Fetch uid of the user if a user with the provided email already exists in the database
 	$existing_user = user_load_by_mail($user_data['email']);
-	$uid = $existing_user->uid;
+	if(is_object($existing_user))
+		$uid = $existing_user->uid;
 
 	// If the user did not already exist, create him/her
 	if(!isset($uid)) {
@@ -117,6 +118,8 @@ function user_node_invite_page_submit($form, &$form_state) {
 		// Retrieve User ID
 		$uid = (array)$account;
 		$uid = $uid['uid'];
+		
+		$existing_user_notification = "";
 	} else {
 		$existing_user_notification = t("However, a user with the provided email was already present in the database and could be reused. ");
 		$account = user_load_by_mail($user_data['email']);
