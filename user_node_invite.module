@@ -222,7 +222,7 @@ function user_node_invite_assign_core_fields($user_data) {
 }
 
 function user_node_invite_form_alter(&$form, &$form_state, $form_id) {
-	if($form_id == 'project_node_form') {
+	if($form_id == 'project_node_form' || $form_id == 'organization_node_form') {
 		unset($form['#token']);
 	}
 }
