@@ -173,6 +173,7 @@ function user_node_invite_page_submit($form, &$form_state) {
 	if($user_data['send_email']) {
 		$params['account'] = $account;
 		$params['tokenized_path'] = $tokenized_path;
+		$params['node'] = $node;
 		drupal_mail('user_node_invite', 'node_invite_created', $account->mail, user_preferred_language($account), $params);
 		$email_notification = t("The invitation was successfully created and the user was notified via E-mail. You find a copy of the link which was sent to the user below. ");
 	} else
@@ -234,8 +235,17 @@ function user_node_invite_mail($key, &$message, $params) {
     switch($key) {
       case 'node_invite_created':
         $langcode = $message['language']->language;
-        $message['subject'] = t('Contribution invititation from tech4p', $variables, array('langcode' => $langcode));
-        $message['body'][] = t("Dear Sir or Madam\n\nYou have been invited to contribute to the Tech4p research-portal.\nYour input is required on specific content, which can be found under the following link:\n@link\n\nKind regards,\nTech4p Research Portal", array('@link' => $params['tokenized_path']), array('langcode' => $langcode));
+		
+		$node_title= $params['node']->title;
+		$invite_firstname = $params['account']->field_profile_firstname['und'][0]['value'];
+		$invite_lastname = $params['account']->field_profile_name['und'][0]['value'];
+		$sitename = variable_get('site_name');
+		$current_account = user_load($GLOBALS['user']->uid);
+		$user_firstname = $current_account->field_profile_firstname['und'][0]['value'];
+		$user_lastname = $current_account->field_profile_name['und'][0]['value'];
+		
+		$message['subject'] = t('Contribution invititation from @sitename', array('@sitename' => $sitename), array('langcode' => $langcode));
+        $message['body'][] = t("Dear @invite_firstname @invite_lastname\n\nYou have been invited to contribute to the @sitename.\n@user_firstname @user_lastname invites you to edit the content \"@node_title\", which can be found under the following link:\n@link\n\nKind regards,\n@sitename", array('@link' => $params['tokenized_path'], '@node_title' => $node_title, '@invite_firstname' => $invite_firstname, '@invite_lastname' => $invite_lastname, '@sitename' => $sitename, '@user_firstname' => $user_firstname, '@user_lastname' => $user_lastname), array('langcode' => $langcode));
         break;
     }
   }
