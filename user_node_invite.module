@@ -90,7 +90,6 @@ function user_node_invite_page($form, &$form_state, $node){
 }
 
 function user_node_invite_page_submit($form, &$form_state) {
-	dpr($form_state);
 	$user_data = $form_state['values'];
 	
 	// Fetch uid of the user if a user with the provided email already exists in the database
@@ -244,8 +243,12 @@ function user_node_invite_mail($key, &$message, $params) {
 		$user_firstname = $current_account->field_profile_firstname['und'][0]['value'];
 		$user_lastname = $current_account->field_profile_name['und'][0]['value'];
 		
-		$message['subject'] = t('Contribution invititation from @sitename', array('@sitename' => $sitename), array('langcode' => $langcode));
-        $message['body'][] = t("Dear @invite_firstname @invite_lastname\n\nYou have been invited to contribute to the @sitename.\n@user_firstname @user_lastname invites you to edit the content \"@node_title\", which can be found under the following link:\n@link\n\nKind regards,\n@sitename", array('@link' => $params['tokenized_path'], '@node_title' => $node_title, '@invite_firstname' => $invite_firstname, '@invite_lastname' => $invite_lastname, '@sitename' => $sitename, '@user_firstname' => $user_firstname, '@user_lastname' => $user_lastname), array('langcode' => $langcode));
-        break;
+		//TODO Multilanguage Version of the mails, English text below
+		//$message['subject'] = t('Contribution invititation from @sitename', array('@sitename' => $sitename), array('langcode' => $langcode));
+        //$message['body'][] = t("Dear @invite_firstname @invite_lastname\n\nYou have been invited to contribute to the @sitename.\n@user_firstname @user_lastname invites you to edit the content \"@node_title\", which can be found under the following link:\n@link\n\nKind regards,\n@sitename", array('@link' => $params['tokenized_path'], '@node_title' => $node_title, '@invite_firstname' => $invite_firstname, '@invite_lastname' => $invite_lastname, '@sitename' => $sitename, '@user_firstname' => $user_firstname, '@user_lastname' => $user_lastname), array('langcode' => $langcode));
+     
+		$message['subject'] = t('Beteiligungseinladung von @sitename', array('@sitename' => $sitename), array('langcode' => $langcode));
+        $message['body'][] = t("Sehr geehrte/r @invite_firstname @invite_lastname\n\nSie wurden eingeladen, zum @sitename beizutragen. \n@user_firstname @user_lastname hat Sie eingeladen, den Beitrag \"@node_title\" zu bearbeiten. Dieser kann unter folgendem Link gefunden werden:\n@link\n\nKind regards,\n@sitename", array('@link' => $params['tokenized_path'], '@node_title' => $node_title, '@invite_firstname' => $invite_firstname, '@invite_lastname' => $invite_lastname, '@sitename' => $sitename, '@user_firstname' => $user_firstname, '@user_lastname' => $user_lastname), array('langcode' => $langcode));
+		break;
     }
   }

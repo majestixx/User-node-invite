@@ -1,0 +1,101 @@
+# $Id$
+#
+# LANGUAGE translation of Drupal (general)
+# Copyright YEAR NAME <EMAIL@ADDRESS>
+# Generated from files:
+#  user_node_invite.module: n/a
+#  user_node_invite.info: n/a
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PROJECT VERSION\n"
+"POT-Creation-Date: 2012-09-05 15:15+0200\n"
+"PO-Revision-Date: YYYY-mm-DD HH:MM+ZZZZ\n"
+"Last-Translator: NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <EMAIL@ADDRESS>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
+
+#: user_node_invite.module:25
+msgid "Invite users"
+msgstr ""
+
+#: user_node_invite.module:44
+msgid "Invite users to nodes"
+msgstr ""
+
+#: user_node_invite.module:45
+msgid "Invite users for any nodes"
+msgstr ""
+
+#: user_node_invite.module:48
+msgid "Invite users to own nodes"
+msgstr ""
+
+#: user_node_invite.module:49
+msgid "Invite users for own nodes"
+msgstr ""
+
+#: user_node_invite.module:66
+msgid "First Name"
+msgstr ""
+
+#: user_node_invite.module:71
+msgid "Last Name"
+msgstr ""
+
+#: user_node_invite.module:76
+msgid "E-Mail"
+msgstr ""
+
+#: user_node_invite.module:81
+msgid "Send invitation notification"
+msgstr ""
+
+#: user_node_invite.module:85
+msgid "Create Invitation"
+msgstr ""
+
+#: user_node_invite.module:121
+msgid "However, a user with the provided email was already present in the database and could be reused. "
+msgstr ""
+
+#: user_node_invite.module:174
+msgid "The invitation was successfully created and the user was notified via E-mail. You find a copy of the link which was sent to the user below. "
+msgstr ""
+
+#: user_node_invite.module:176
+msgid "The invitation was successfully created, but the user was not notified. You find the link, which the user should receive, below. "
+msgstr ""
+
+#: user_node_invite.module:179
+msgid "The invitation link for @mail is: @link"
+msgstr ""
+
+#: user_node_invite.module:194
+msgid "user"
+msgstr ""
+
+#: user_node_invite.module:234
+msgid "Contribution invititation from tech4p"
+msgstr ""
+
+#: user_node_invite.module:235
+msgid "Dear Sir or Madam\n\nYou have been invited to contribute to the Tech4p research-portal.\nYour input is required on specific content, which can be found under the following link:\n@link\n\nKind regards,\nTech4p Research Portal"
+msgstr ""
+
+#: user_node_invite.info:0
+msgid "User node invite"
+msgstr ""
+
+#: user_node_invite.info:0
+msgid "Invite users to edit specific nodes."
+msgstr ""
+
+#: user_node_invite.info:0
+msgid "Access control"
+msgstr ""
+
