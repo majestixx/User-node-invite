@@ -159,14 +159,12 @@ function user_node_invite_page_submit($form, &$form_state) {
 		drupal_write_record("node_access", $access_entry);
 	}
 
-	// Retrieve the token for the created user from the database
-	$token_query = db_query('SELECT token FROM tokenauth_tokens WHERE uid = :uid', array(':uid' => $uid));
-	foreach($token_query as $entry) {
-		$token = $entry->token;
-	}
-	
 	// Generate the tokenized path to the current node using the created user
-	$tokenized_path = url('node/' . $nid, array('absolute' => TRUE, 'query' => array('token' => $token)));
+    $href = 'node/' . $nid;
+    if (module_load_include('inc', 'urllogin', 'urllogin_security')) {
+      $tokenized_path = url('l/' . urllogin_encode($uid, variable_get('urllogin_codekey', 0), urllogin_passphrase()) . '/' . $href, array('absolute' => TRUE));
+    }
+    
 	
 	// Sends an invitation email to the user if the option was checked in the form	
 	if($user_data['send_email']) {
@@ -179,7 +177,7 @@ function user_node_invite_page_submit($form, &$form_state) {
 		$email_notification = t("The invitation was successfully created, but the user was not notified. You find the link, which the user should receive, below. ");
 
 	
-	drupal_set_message($email_notification . $existing_user_notification . t('The invitation link for @mail is: @link', array('@mail' => $user_data['email'], '@link' => $tokenized_path)));
+	drupal_set_message($email_notification . $existing_user_notification . t('The invitation link for @mail is: <a href="@link">@link</a>', array('@mail' => $user_data['email'], '@link' => $tokenized_path)));
 	return $account;
 }
 
@@ -219,12 +217,6 @@ function user_node_invite_assign_core_fields($user_data) {
   $fields['field_profile_name'][LANGUAGE_NONE][0]['value'] = $user_data['last_name'];
   
   return $fields;
-}
-
-function user_node_invite_form_alter(&$form, &$form_state, $form_id) {
-	if($form_id == 'project_node_form' || $form_id == 'organization_node_form') {
-		unset($form['#token']);
-	}
 }
 
 function user_node_invite_mail($key, &$message, $params) {
